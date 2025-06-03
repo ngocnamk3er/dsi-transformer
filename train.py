@@ -120,20 +120,20 @@ def main():
         per_device_eval_batch_size=64,
         evaluation_strategy='epoch',
         eval_steps=1,
-        max_steps=500,
-        num_train_epochs=4,
+        # max_steps=1000,
+        num_train_epochs=20,
         save_total_limit=1,
 
         dataloader_drop_last=False,  # necessary
         report_to='wandb',
-        logging_steps=50,
+        logging_steps=20,
         save_strategy="steps",
         save_steps=100, 
         # fp16=True,  # gives 0/nan loss at some point during training, seems this is a transformers bug.
         dataloader_num_workers=10,
         gradient_accumulation_steps=2,
         push_to_hub=True,
-        hub_model_id=f"ngocnamk3er/dsi_transformers_vault_t5_large",	
+        hub_model_id=f"ngocnamk3er/dsi_transformers_vault_t5_large_3_6",	
         hub_strategy="every_save"
     )
 
@@ -151,8 +151,7 @@ def main():
         callbacks=[QueryEvalCallback(test_dataset, wandb, restrict_decode_vocab, training_args, tokenizer)],
         restrict_decode_vocab=restrict_decode_vocab
     )
-    trainer.train(
-    )
+    trainer.train()
     # trainer.train(resume_from_checkpoint=True)
     trainer.push_to_hub()
 
