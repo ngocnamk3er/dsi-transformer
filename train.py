@@ -126,7 +126,7 @@ def main():
 
         dataloader_drop_last=False,  # necessary
         report_to='wandb',
-        logging_steps=20,
+        logging_steps=100,
         save_strategy="steps",
         save_steps=100, 
         # fp16=True,  # gives 0/nan loss at some point during training, seems this is a transformers bug.
