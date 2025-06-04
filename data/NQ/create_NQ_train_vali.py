@@ -10,7 +10,7 @@ NUM_EVAL = 2000
 TOTAL_SAMPLES = NUM_TRAIN + NUM_EVAL
 
 try:
-    dataset = load_dataset("Fsoft-AIC/the-vault-function", split_set=["train/small"], languages=['ruby'])
+    dataset = load_dataset("Fsoft-AIC/the-vault-function", split_set=["train/small"], languages=['python'])
     data = dataset['train_small']
 except Exception as e:
     print(f"Error loading dataset: {e}")
@@ -24,8 +24,8 @@ random.shuffle(rand_inds)
 processed_samples_count = 0
 
 
-with open('Vault_multi_task_train.json', 'w') as tf, \
-     open('Vault_valid.json', 'w') as vf:
+with open('Vault_multi_task_train_python.json', 'w') as tf, \
+     open('Vault_valid_python.json', 'w') as vf:
 
     for ind in rand_inds:
         sample = data[ind]

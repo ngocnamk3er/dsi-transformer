@@ -1,14 +1,28 @@
 from data import IndexingTrainDataset, IndexingCollator, QueryEvalCollator
-from transformers import T5Tokenizer, T5ForConditionalGeneration, TrainingArguments, TrainerCallback
+from transformers import (
+    T5Tokenizer,
+    T5ForConditionalGeneration,
+    TrainingArguments,
+    TrainerCallback,
+)
 from trainer import IndexingTrainer
 import numpy as np
 import torch
 import wandb
 from torch.utils.data import DataLoader
 from tqdm.auto import tqdm
+from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
+
 
 class QueryEvalCallback(TrainerCallback):
-    def __init__(self, test_dataset, logger, restrict_decode_vocab, args: TrainingArguments, tokenizer: T5Tokenizer):
+    def __init__(
+        self,
+        test_dataset,
+        logger,
+        restrict_decode_vocab,
+        args: TrainingArguments,
+        tokenizer: T5Tokenizer,
+    ):
         self.tokenizer = tokenizer
         self.logger = logger
         self.args = args
@@ -17,10 +31,7 @@ class QueryEvalCallback(TrainerCallback):
         self.dataloader = DataLoader(
             test_dataset,
             batch_size=self.args.per_device_eval_batch_size,
-            collate_fn=QueryEvalCollator(
-                self.tokenizer,
-                padding='longest'
-            ),
+            collate_fn=QueryEvalCollator(self.tokenizer, padding="longest"),
             shuffle=False,
             drop_last=False,
             num_workers=self.args.dataloader_num_workers,
@@ -29,26 +40,35 @@ class QueryEvalCallback(TrainerCallback):
     def on_epoch_end(self, args, state, control, **kwargs):
         hit_at_1 = 0
         hit_at_10 = 0
-        model = kwargs['model'].eval()
-        for batch in tqdm(self.dataloader, desc='\rEvaluating dev queries', leave=False):
+        model = kwargs["model"].eval()
+        for batch in tqdm(
+            self.dataloader, desc="\rEvaluating dev queries", leave=False
+        ):
             inputs, labels = batch
             with torch.no_grad():
                 batch_beams = model.generate(
-                    inputs['input_ids'].to(model.device),
+                    inputs["input_ids"].to(model.device),
                     max_length=20,
                     num_beams=10,
                     prefix_allowed_tokens_fn=self.restrict_decode_vocab,
                     num_return_sequences=10,
-                    early_stopping=True, ).reshape(inputs['input_ids'].shape[0], 10, -1)
+                    early_stopping=True,
+                ).reshape(inputs["input_ids"].shape[0], 10, -1)
                 for beams, label in zip(batch_beams, labels):
-                    rank_list = self.tokenizer.batch_decode(beams,
-                                                            skip_special_tokens=True)  # beam search should not return repeated docids but somehow due to T5 tokenizer there some repeats.
+                    rank_list = self.tokenizer.batch_decode(
+                        beams, skip_special_tokens=True
+                    )  # beam search should not return repeated docids but somehow due to T5 tokenizer there some repeats.
                     hits = np.where(np.array(rank_list)[:10] == label)[0]
                     if len(hits) != 0:
                         hit_at_10 += 1
                         if hits[0] == 0:
                             hit_at_1 += 1
-        self.logger.log({"Hits@1": hit_at_1 / len(self.test_dataset), "Hits@10": hit_at_10 / len(self.test_dataset)})
+        self.logger.log(
+            {
+                "Hits@1": hit_at_1 / len(self.test_dataset),
+                "Hits@10": hit_at_10 / len(self.test_dataset),
+            }
+        )
 
 
 def compute_metrics(eval_preds):
@@ -58,40 +78,51 @@ def compute_metrics(eval_preds):
         num_predict += 1
         if len(np.where(predict == 1)[0]) == 0:
             continue
-        if np.array_equal(label[:np.where(label == 1)[0].item()],
-                          predict[np.where(predict == 0)[0][0].item() + 1:np.where(predict == 1)[0].item()]):
+        if np.array_equal(
+            label[: np.where(label == 1)[0].item()],
+            predict[
+                np.where(predict == 0)[0][0].item()
+                + 1 : np.where(predict == 1)[0].item()
+            ],
+        ):
             num_correct += 1
 
-    return {'accuracy': num_correct / num_predict}
+    return {"accuracy": num_correct / num_predict}
 
 
 def main():
-    model_name = "t5-large"
+    model_name = "Salesforce/codet5-base"
     L = 32  # only use the first 32 tokens of documents (including title)
 
     # We use wandb to log Hits scores after each epoch. Note, this script does not save model checkpoints.
-    wandb.login(key='c804f1ccb46b89fce13fb3bffe8b517ebb2ffc8a')
-    wandb.init(project="DSI-nam-vast", name='NQ-10k-t5-large')
+    wandb.login(key="c804f1ccb46b89fce13fb3bffe8b517ebb2ffc8a")
+    wandb.init(project="DSI-nam-vast-python-codet5", name="NQ-10k-t5-large")
 
-    tokenizer = T5Tokenizer.from_pretrained(model_name, cache_dir='cache')
-    model = T5ForConditionalGeneration.from_pretrained(model_name, cache_dir='cache')
+    tokenizer = AutoTokenizer.from_pretrained(model_name, cache_dir="cache")
+    model = AutoModelForSeq2SeqLM.from_pretrained(model_name, cache_dir="cache")
 
-    train_dataset = IndexingTrainDataset(path_to_data='./Vault_multi_task_train.json',
-                                         max_length=L,
-                                         cache_dir='cache',
-                                         tokenizer=tokenizer)
-    
+    train_dataset = IndexingTrainDataset(
+        path_to_data="./Vault_multi_task_train_python.json",
+        max_length=L,
+        cache_dir="cache",
+        tokenizer=tokenizer,
+    )
+
     # This eval set is really not the 'eval' set but used to report if the model can memorise (index) all training data points.
-    eval_dataset = IndexingTrainDataset(path_to_data='./Vault_multi_task_train.json',
-                                        max_length=L,
-                                        cache_dir='cache',
-                                        tokenizer=tokenizer)
-    
+    eval_dataset = IndexingTrainDataset(
+        path_to_data="./Vault_multi_task_train_python.json",
+        max_length=L,
+        cache_dir="cache",
+        tokenizer=tokenizer,
+    )
+
     # This is the actual eval set.
-    test_dataset = IndexingTrainDataset(path_to_data='./Vault_valid.json',
-                                        max_length=L,
-                                        cache_dir='cache',
-                                        tokenizer=tokenizer)
+    test_dataset = IndexingTrainDataset(
+        path_to_data="./Vault_valid_python.json",
+        max_length=L,
+        cache_dir="cache",
+        tokenizer=tokenizer,
+    )
 
     ################################################################
     # docid generation constrain, we only generate integer docids.
@@ -109,32 +140,31 @@ def main():
 
     def restrict_decode_vocab(batch_idx, prefix_beam):
         return INT_TOKEN_IDS
+
     ################################################################
 
     training_args = TrainingArguments(
         output_dir="./results",
         learning_rate=0.0005,
-        # warmup_steps=10000,
-        weight_decay=0.01,
-        per_device_train_batch_size=64,
-        per_device_eval_batch_size=64,
-        evaluation_strategy='epoch',
-        eval_steps=1,
-        # max_steps=1000,
-        num_train_epochs=20,
+        warmup_steps=10000,
+        # weight_decay=0.01,
+        per_device_train_batch_size=128,
+        per_device_eval_batch_size=128,
+        evaluation_strategy="steps",
+        eval_steps=100,
+        max_steps=30000,
         save_total_limit=1,
-
         dataloader_drop_last=False,  # necessary
-        report_to='wandb',
-        logging_steps=100,
+        report_to="wandb",
+        logging_steps=50,
         save_strategy="steps",
-        save_steps=100, 
+        save_steps=1000,
         # fp16=True,  # gives 0/nan loss at some point during training, seems this is a transformers bug.
         dataloader_num_workers=10,
         gradient_accumulation_steps=2,
         push_to_hub=True,
-        hub_model_id=f"ngocnamk3er/dsi_transformers_vault_t5_large_3_6",	
-        hub_strategy="every_save"
+        hub_model_id=f"ngocnamk3er/dsi_transformers_code_t5_base_python",
+        hub_strategy="every_save",
     )
 
     trainer = IndexingTrainer(
@@ -145,11 +175,15 @@ def main():
         eval_dataset=eval_dataset,
         data_collator=IndexingCollator(
             tokenizer,
-            padding='longest',
+            padding="longest",
         ),
         compute_metrics=compute_metrics,
-        callbacks=[QueryEvalCallback(test_dataset, wandb, restrict_decode_vocab, training_args, tokenizer)],
-        restrict_decode_vocab=restrict_decode_vocab
+        callbacks=[
+            QueryEvalCallback(
+                test_dataset, wandb, restrict_decode_vocab, training_args, tokenizer
+            )
+        ],
+        restrict_decode_vocab=restrict_decode_vocab,
     )
     trainer.train()
     # trainer.train(resume_from_checkpoint=True)
