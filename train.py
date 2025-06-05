@@ -148,10 +148,10 @@ def main():
         learning_rate=0.0005,
         warmup_steps=10000,
         # weight_decay=0.01,
-        per_device_train_batch_size=128,
-        per_device_eval_batch_size=128,
+        per_device_train_batch_size=64,
+        per_device_eval_batch_size=64,
         evaluation_strategy="steps",
-        eval_steps=500,
+        eval_steps=100,
         max_steps=10000,
         save_total_limit=1,
         dataloader_drop_last=False,  # necessary
