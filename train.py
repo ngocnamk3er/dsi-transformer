@@ -150,8 +150,8 @@ def main():
         # weight_decay=0.01,
         per_device_train_batch_size=64,
         per_device_eval_batch_size=64,
-        evaluation_strategy="steps",
-        eval_steps=100,
+        evaluation_strategy="no",
+        # eval_steps=100,
         max_steps=10000,
         save_total_limit=1,
         dataloader_drop_last=False,  # necessary
