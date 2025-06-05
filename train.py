@@ -96,7 +96,7 @@ def main():
 
     # We use wandb to log Hits scores after each epoch. Note, this script does not save model checkpoints.
     wandb.login(key="c804f1ccb46b89fce13fb3bffe8b517ebb2ffc8a")
-    wandb.init(project="DSI-nam-python-codet5-collab", name="python-10k-t5-large")
+    wandb.init(project="dsi_code_t5_base", name="python-10k-t5-large")
 
     tokenizer = AutoTokenizer.from_pretrained(model_name, cache_dir="cache")
     model = AutoModelForSeq2SeqLM.from_pretrained(model_name, cache_dir="cache")
@@ -152,7 +152,7 @@ def main():
         per_device_eval_batch_size=64,
         evaluation_strategy="steps",
         eval_steps=100,
-        max_steps=20000,
+        max_steps=10000,
         save_total_limit=1,
         dataloader_drop_last=False,  # necessary
         report_to="wandb",
@@ -163,7 +163,7 @@ def main():
         dataloader_num_workers=4,
         gradient_accumulation_steps=2,
         push_to_hub=True,
-        hub_model_id=f"ngocnamk3er/dsi_transformers_code_t5_base_python_collab",
+        hub_model_id=f"ngocnamk3er/dsi_code_t5_base",
         hub_strategy="every_save",
     )
 
