@@ -157,13 +157,13 @@ def main():
         dataloader_drop_last=False,  # necessary
         report_to="wandb",
         logging_steps=50,
-        save_strategy="no",
-        # save_steps=1000,
+        save_strategy="steps",
+        save_steps=1000,
         # fp16=True,  # gives 0/nan loss at some point during training, seems this is a transformers bug.
         dataloader_num_workers=4,
         gradient_accumulation_steps=2,
         push_to_hub=True,
-        hub_model_id=f"ngocnamk3er/dsi_transformers_code_t5_base_python_kaggle",
+        hub_model_id=f"ngocnamk3er/dsi_transformers_code_t5_base_python_collab",
         hub_strategy="every_save",
     )
 
