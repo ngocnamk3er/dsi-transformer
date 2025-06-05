@@ -152,7 +152,7 @@ def main():
         per_device_eval_batch_size=32,
         evaluation_strategy="steps",
         eval_steps=100,
-        max_steps=30000,
+        max_steps=10000,
         save_total_limit=1,
         dataloader_drop_last=False,  # necessary
         report_to="wandb",
