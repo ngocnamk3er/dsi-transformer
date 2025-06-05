@@ -38,7 +38,7 @@ with open('Vault_multi_task_train_python_clean.json', 'w') as tf, \
         code_text = cleaned_code_text.strip()
         
         docstring_text = sample.get('docstring', '')
-        cleaned_docstring_text = code_text.replace('\u00A0', ' ')
+        cleaned_docstring_text = docstring_text.replace('\u00A0', ' ')
         cleaned_docstring_text = cleaned_docstring_text.replace('\u2028', ' ')
         cleaned_docstring_text = cleaned_docstring_text.replace('\u2029', ' ')
         cleaned_docstring_text = re.sub(r'\s+', ' ', cleaned_docstring_text)
