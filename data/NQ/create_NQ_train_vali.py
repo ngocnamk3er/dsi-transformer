@@ -2,7 +2,7 @@ from datasets import load_dataset
 import random
 import numpy as np
 import json
-
+import re
 random.seed(313)
 
 NUM_TRAIN = 8000
@@ -24,13 +24,26 @@ random.shuffle(rand_inds)
 processed_samples_count = 0
 
 
-with open('Vault_multi_task_train_python.json', 'w') as tf, \
-     open('Vault_valid_python.json', 'w') as vf:
+with open('Vault_multi_task_train_python_clean.json', 'w') as tf, \
+     open('Vault_valid_python_clean.json', 'w') as vf:
 
     for ind in rand_inds:
         sample = data[ind]
+        
         code_text = sample.get('code', '') 
+        cleaned_code_text = code_text.replace('\u00A0', ' ')
+        cleaned_code_text = cleaned_code_text.replace('\u2028', ' ')
+        cleaned_code_text = cleaned_code_text.replace('\u2029', ' ')
+        cleaned_code_text = re.sub(r'\s+', ' ', cleaned_code_text)
+        code_text = cleaned_code_text.strip()
+        
         docstring_text = sample.get('docstring', '')
+        cleaned_docstring_text = code_text.replace('\u00A0', ' ')
+        cleaned_docstring_text = cleaned_docstring_text.replace('\u2028', ' ')
+        cleaned_docstring_text = cleaned_docstring_text.replace('\u2029', ' ')
+        cleaned_docstring_text = re.sub(r'\s+', ' ', cleaned_docstring_text)
+        docstring_text = cleaned_docstring_text.strip()
+        
         code_item = json.dumps({'text_id': str(processed_samples_count), 'text': 'code: ' + code_text})
         docstring_item = json.dumps({'text_id': str(processed_samples_count), 'text': 'docstring: ' + docstring_text})
 

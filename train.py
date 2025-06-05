@@ -96,13 +96,13 @@ def main():
 
     # We use wandb to log Hits scores after each epoch. Note, this script does not save model checkpoints.
     wandb.login(key="c804f1ccb46b89fce13fb3bffe8b517ebb2ffc8a")
-    wandb.init(project="DSI-nam-vast-python-codet5", name="NQ-10k-t5-large")
+    wandb.init(project="DSI-nam-vast-python-codet5-kaggle", name="NQ-10k-t5-large")
 
     tokenizer = AutoTokenizer.from_pretrained(model_name, cache_dir="cache")
     model = AutoModelForSeq2SeqLM.from_pretrained(model_name, cache_dir="cache")
 
     train_dataset = IndexingTrainDataset(
-        path_to_data="./Vault_multi_task_train_python.json",
+        path_to_data="./Vault_multi_task_train_python_clean.json",
         max_length=L,
         cache_dir="cache",
         tokenizer=tokenizer,
@@ -110,7 +110,7 @@ def main():
 
     # This eval set is really not the 'eval' set but used to report if the model can memorise (index) all training data points.
     eval_dataset = IndexingTrainDataset(
-        path_to_data="./Vault_multi_task_train_python.json",
+        path_to_data="./Vault_multi_task_train_python_clean.json",
         max_length=L,
         cache_dir="cache",
         tokenizer=tokenizer,
@@ -118,7 +118,7 @@ def main():
 
     # This is the actual eval set.
     test_dataset = IndexingTrainDataset(
-        path_to_data="./Vault_valid_python.json",
+        path_to_data="./Vault_valid_python_clean.json",
         max_length=L,
         cache_dir="cache",
         tokenizer=tokenizer,
@@ -148,8 +148,8 @@ def main():
         learning_rate=0.0005,
         warmup_steps=10000,
         # weight_decay=0.01,
-        per_device_train_batch_size=128,
-        per_device_eval_batch_size=128,
+        per_device_train_batch_size=32,
+        per_device_eval_batch_size=32,
         evaluation_strategy="steps",
         eval_steps=100,
         max_steps=30000,
@@ -163,7 +163,7 @@ def main():
         dataloader_num_workers=10,
         gradient_accumulation_steps=2,
         push_to_hub=True,
-        hub_model_id=f"ngocnamk3er/dsi_transformers_code_t5_base_python",
+        hub_model_id=f"ngocnamk3er/dsi_transformers_code_t5_base_python_kaggle",
         hub_strategy="every_save",
     )
 
