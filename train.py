@@ -148,7 +148,10 @@ def main():
     training_args = TrainingArguments(
         output_dir="./results",
         learning_rate=0.001,
-        # warmup_steps=1000,
+        warmup_steps=500,
+        
+        lr_scheduler_type = "cosine_with_restarts",
+        num_cycles = 3,
         # weight_decay=0.01,
         per_device_train_batch_size=64,
         per_device_eval_batch_size=64,
@@ -167,19 +170,7 @@ def main():
         push_to_hub=True,
         hub_model_id=f"ngocnamk3er/dsi_code_t5_base_kaggle_6_6_v2",
         hub_strategy="every_save",
-    )
-
-    optimizer = AdamW(model.parameters(),
-                        lr=training_args.learning_rate,
-                        eps=training_args.adam_epsilon,
-                        betas=(training_args.adam_beta1, training_args.adam_beta2),
-                        weight_decay=training_args.weight_decay) 
-
-    lr_scheduler = get_cosine_with_hard_restarts_schedule_with_warmup(
-        optimizer=optimizer,
-        num_warmup_steps=training_args.warmup_steps,
-        num_training_steps=training_args.max_steps,
-        num_cycles=4, 
+        
     )
 
     trainer = IndexingTrainer(
@@ -199,7 +190,6 @@ def main():
             )
         ],
         restrict_decode_vocab=restrict_decode_vocab,
-        optimizers=(optimizer, lr_scheduler)
     )
     trainer.train()
     # trainer.train(resume_from_checkpoint=True)
