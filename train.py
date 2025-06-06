@@ -168,7 +168,7 @@ def main():
         hub_strategy="every_save",
     )
 
-
+    
     def create_my_scheduler(optimizer, num_training_steps):
         # Lấy số bước warmup từ training_args
         num_warmup_steps = training_args.warmup_steps
@@ -204,7 +204,7 @@ def main():
             )
         ],
         restrict_decode_vocab=restrict_decode_vocab,
-        create_scheduler=create_my_scheduler
+        create_optimizer_and_scheduler=create_my_scheduler
     )
     trainer.train()
     # trainer.train(resume_from_checkpoint=True)
