@@ -147,7 +147,7 @@ def main():
 
     training_args = TrainingArguments(
         output_dir="./results",
-        learning_rate=0.0005,
+        learning_rate=0.001,
         # warmup_steps=1000,
         # weight_decay=0.01,
         per_device_train_batch_size=64,
