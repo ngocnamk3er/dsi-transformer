@@ -147,7 +147,7 @@ def main():
 
     training_args = TrainingArguments(
         output_dir="./results",
-        learning_rate=0.001,
+        learning_rate=0.0005,
         warmup_steps=500,
         
         lr_scheduler_type = "cosine_with_restarts",
