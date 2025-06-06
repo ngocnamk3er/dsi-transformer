@@ -13,7 +13,8 @@ from torch.utils.data import DataLoader
 from tqdm.auto import tqdm
 from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
 from transformers import TrainingArguments, Trainer, get_scheduler
-
+from torch.optim import AdamW 
+from transformers import get_cosine_with_hard_restarts_schedule_with_warmup
 
 class QueryEvalCallback(TrainerCallback):
     def __init__(
@@ -168,24 +169,18 @@ def main():
         hub_strategy="every_save",
     )
 
-    
-    def create_my_scheduler(optimizer, num_training_steps):
-        # Lấy số bước warmup từ training_args
-        num_warmup_steps = training_args.warmup_steps
-        total_steps = (
-            training_args.max_steps
-        ) 
-         
-        num_cycles_for_hard_restarts = 4 
+    optimizer = AdamW(model.parameters(),
+                        lr=training_args.learning_rate,
+                        eps=training_args.adam_epsilon,
+                        betas=(training_args.adam_beta1, training_args.adam_beta2),
+                        weight_decay=training_args.weight_decay) 
 
-        lr_scheduler = get_scheduler(
-            name="cosine_with_hard_restarts",  
-            optimizer=optimizer,
-            num_warmup_steps=num_warmup_steps,
-            num_training_steps=total_steps,
-            num_cycles=num_cycles_for_hard_restarts,
-        )
-        return lr_scheduler
+    lr_scheduler = get_cosine_with_hard_restarts_schedule_with_warmup(
+        optimizer=optimizer,
+        num_warmup_steps=training_args.warmup_steps,
+        num_training_steps=training_args.max_steps,
+        num_cycles=4, 
+    )
 
     trainer = IndexingTrainer(
         model=model,
@@ -204,7 +199,7 @@ def main():
             )
         ],
         restrict_decode_vocab=restrict_decode_vocab,
-        create_optimizer_and_scheduler=create_my_scheduler
+        optimizers=(optimizer, lr_scheduler)
     )
     trainer.train()
     # trainer.train(resume_from_checkpoint=True)
