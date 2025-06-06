@@ -12,6 +12,7 @@ import wandb
 from torch.utils.data import DataLoader
 from tqdm.auto import tqdm
 from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
+from transformers import TrainingArguments, Trainer, get_scheduler
 
 
 class QueryEvalCallback(TrainerCallback):
@@ -91,7 +92,7 @@ def compute_metrics(eval_preds):
 
 
 def main():
-    model_name = "Salesforce/codet5-base"
+    model_name = "ngocnamk3er/dsi_code_t5_base_kaggle_6_6"
     L = 32  # only use the first 32 tokens of documents (including title)
 
     # We use wandb to log Hits scores after each epoch. Note, this script does not save model checkpoints.
@@ -167,6 +168,25 @@ def main():
         hub_strategy="every_save",
     )
 
+
+    def create_my_scheduler(optimizer, num_training_steps):
+        # Lấy số bước warmup từ training_args
+        num_warmup_steps = training_args.warmup_steps
+        total_steps = (
+            training_args.max_steps
+        ) 
+         
+        num_cycles_for_hard_restarts = 4 
+
+        lr_scheduler = get_scheduler(
+            name="cosine_with_hard_restarts",  
+            optimizer=optimizer,
+            num_warmup_steps=num_warmup_steps,
+            num_training_steps=total_steps,
+            num_cycles=num_cycles_for_hard_restarts,
+        )
+        return lr_scheduler
+
     trainer = IndexingTrainer(
         model=model,
         tokenizer=tokenizer,
@@ -184,6 +204,7 @@ def main():
             )
         ],
         restrict_decode_vocab=restrict_decode_vocab,
+        create_scheduler=create_my_scheduler
     )
     trainer.train()
     # trainer.train(resume_from_checkpoint=True)
