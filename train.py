@@ -173,6 +173,22 @@ def main():
         
     )
 
+
+    optimizer = AdamW(model.parameters(),
+                      lr=training_args.learning_rate,
+                      eps=training_args.adam_epsilon, 
+                      betas=(training_args.adam_beta1, training_args.adam_beta2),
+                      weight_decay=training_args.weight_decay) 
+
+    lr_scheduler = get_cosine_with_hard_restarts_schedule_with_warmup(
+        optimizer=optimizer,
+        num_warmup_steps=training_args.warmup_steps,
+        num_training_steps=training_args.max_steps,
+        num_cycles=3,
+    )
+
+    
+
     trainer = IndexingTrainer(
         model=model,
         tokenizer=tokenizer,
@@ -190,6 +206,7 @@ def main():
             )
         ],
         restrict_decode_vocab=restrict_decode_vocab,
+        optimizers=(optimizer, lr_scheduler)
     )
     trainer.train()
     # trainer.train(resume_from_checkpoint=True)
