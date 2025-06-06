@@ -4,10 +4,7 @@ from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
 from torch.utils.data import DataLoader
 from tqdm.auto import tqdm
 
-# Import các lớp dữ liệu và collator từ file data.py và trainer.py của bạn
-# Đảm bảo các file này có sẵn và các lớp/hàm này được định nghĩa trong đó
 from data import IndexingTrainDataset, QueryEvalCollator
-# from trainer import ... # Không cần IndexingTrainer hay TrainingArguments cho bước này
 
 def calculate_mrr(
     model,
