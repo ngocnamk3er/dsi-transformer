@@ -149,9 +149,6 @@ def main():
         output_dir="./results",
         learning_rate=0.0005,
         warmup_steps=500,
-        
-        lr_scheduler_type = "cosine_with_restarts",
-        num_cycles = 3,
         # weight_decay=0.01,
         per_device_train_batch_size=64,
         per_device_eval_batch_size=64,
