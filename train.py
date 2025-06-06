@@ -97,7 +97,7 @@ def main():
 
     # We use wandb to log Hits scores after each epoch. Note, this script does not save model checkpoints.
     wandb.login(key="c804f1ccb46b89fce13fb3bffe8b517ebb2ffc8a")
-    wandb.init(project="dsi_code_t5_base", name="dsi_code_t5_base_kaggle_6_6")
+    wandb.init(project="dsi_code_t5_base", name="dsi_code_t5_base_kaggle_6_6_v2")
 
     tokenizer = AutoTokenizer.from_pretrained(model_name, cache_dir="cache")
     model = AutoModelForSeq2SeqLM.from_pretrained(model_name, cache_dir="cache")
