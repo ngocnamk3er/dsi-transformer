@@ -55,7 +55,7 @@ def calculate_mrr(
             for beams, label in zip(batch_beams, labels):
                 # Giải mã các beam search results thành chuỗi văn bản (docid string)
                 rank_list = tokenizer.batch_decode(beams, skip_special_tokens=True)
-
+                print(rank_list)
                 # Tìm vị trí (hạng) của docid đúng trong danh sách kết quả (rank_list)
                 # rank_list là danh sách 0-based index
                 try:
