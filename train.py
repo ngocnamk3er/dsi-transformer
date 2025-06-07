@@ -93,12 +93,12 @@ def compute_metrics(eval_preds):
 
 
 def main():
-    model_name = "ngocnamk3er/dsi_code_t5_base_kaggle_6_6"
+    model_name = "ngocnamk3er/dsi_transformers_code_t5_base_python"
     L = 32  # only use the first 32 tokens of documents (including title)
 
     # We use wandb to log Hits scores after each epoch. Note, this script does not save model checkpoints.
     wandb.login(key="c804f1ccb46b89fce13fb3bffe8b517ebb2ffc8a")
-    wandb.init(project="dsi_code_t5_base", name="dsi_code_t5_base_kaggle_6_6_v2")
+    wandb.init(project="DSI-nam-vast-python-codet5", name="dsi_transformers_code_t5_base_python_v2")
 
     tokenizer = AutoTokenizer.from_pretrained(model_name, cache_dir="cache")
     model = AutoModelForSeq2SeqLM.from_pretrained(model_name, cache_dir="cache")
@@ -165,7 +165,7 @@ def main():
         dataloader_num_workers=4,
         gradient_accumulation_steps=2,
         push_to_hub=True,
-        hub_model_id=f"ngocnamk3er/dsi_code_t5_base_kaggle_6_6_v2",
+        hub_model_id=f"ngocnamk3er/dsi_transformers_code_t5_base_python_v2",
         hub_strategy="every_save",
         
     )
