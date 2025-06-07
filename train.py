@@ -93,7 +93,7 @@ def compute_metrics(eval_preds):
 
 
 def main():
-    model_name = "ngocnamk3er/dsi_transformers_code_t5_base_python"
+    model_name = "ngocnamk3er/dsi_transformers_code_t5_base_python_v2"
     L = 32  # only use the first 32 tokens of documents (including title)
 
     # We use wandb to log Hits scores after each epoch. Note, this script does not save model checkpoints.
